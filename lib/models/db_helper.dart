@@ -3,6 +3,7 @@ import 'package:assignment3/models/meal_plan.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+// Database helper class
 class DatabaseHelper {
   static late DatabaseHelper _instance;
   static Database? _database;
@@ -16,6 +17,7 @@ class DatabaseHelper {
     return _database!;
   }
 
+  // Setup the database
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'calories_db.db');
     Database db = await openDatabase(
@@ -37,7 +39,7 @@ class DatabaseHelper {
             FOREIGN KEY (food_id) REFERENCES $foodTable(id)
           )
         ''');
-        print("we inside on create!!!");
+
         await _insertInitialFoodItems(db);
       },
       onUpgrade: (Database db, int oldVersion, int newVersion) async {},
@@ -45,8 +47,8 @@ class DatabaseHelper {
     return db;
   }
 
+  // Function to insert the preferred food items
   Future<void> _insertInitialFoodItems(Database db) async {
-    print("hello");
     final foodItems = [
       {'name': 'Apple', 'calories': 95},
       {'name': 'Banana', 'calories': 105},
@@ -88,17 +90,21 @@ class DatabaseHelper {
     }
   }
 
+  // Function to get all the food items
   Future<List<Food>> getAllFoods() async {
     Database db = await database;
     List<Map<String, dynamic>> result = await db.query(foodTable);
     return result.map((map) => Food.fromMap(map)).toList();
   }
 
+  // Function to create a meal plan
   Future<int> createMealPlan(int foodId, String date) async {
     Database db = await database;
     return await db.insert(mealPlanTable, {'food_id': foodId, 'date': date});
   }
 
+  // Function to remove all the food items for a particular date, in essence
+  // it removes the meal plan for that date.
   Future<void> clearMealPlan(String date) async {
     Database db = await database;
 
@@ -109,6 +115,7 @@ class DatabaseHelper {
     );
   }
 
+  // Function to delete a particular food item
   Future<int> deleteMealPlan(int mealPlanId) async {
     Database db = await database;
     return await db.delete(
@@ -118,6 +125,7 @@ class DatabaseHelper {
     );
   }
 
+  // Function to get the meal plan for a particular date
   Future<List<Map<String, dynamic>>> getMealPlanByDate(String date) async {
     Database db = await database;
     return await db.rawQuery('''
